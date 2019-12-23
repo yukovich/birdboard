@@ -15,11 +15,17 @@ class CreateProjectsTable extends Migration
     {
         Schema::create('projects', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedBigInteger('owner_id');
             $table->string('title');
             $table->text('description');
             $table->timestamps();
+
+            //create foreign key. Owner_id is from users table, and if entry there is deleted, the deletion 'cascades' down as well.
+            $table->foreign('owner_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
+
+
 
     /**
      * Reverse the migrations.

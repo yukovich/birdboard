@@ -14,10 +14,24 @@ class ProjectsTest extends TestCase
      * @test
      
      */
+    public function test_only_authenticated_users_can_create_projects()
+    {
+      //$this->withoutExceptionHandling();
+      //sign a user in, otherwise "Unauthenticated" error 
+      
+
+      $attributes = factory('App\Project')->raw();
+
+      //if the created project has no owner, then assert an error
+      $this->post('/projects',$attributes)->assertRedirect('login');
+    }
+
     public function test_a_user_can_create_a_project()
     {
         $this->withoutExceptionHandling();
+      $this->actingAs(factory('App\User')->create());
 
+     
         $attributes= [
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph
@@ -41,13 +55,16 @@ class ProjectsTest extends TestCase
 
       $project = factory('App\Project')->create();
       //when the user goes to the specific project page, he see the attributes of the project
-      $this->get('/projects/'.$project->id)
+      $this->get($project->path())
         ->assertSee($project->title)
         ->assertSee($project->description);
     }
     
     public function test_a_project_requires_a_title()
     {
+      
+      $this->actingAs(factory('App\User')->create());
+
       $attributes = factory('App\Project')->raw(['title'=>'']);
 
       //if the created project has no attributes, then assert an error
@@ -56,11 +73,16 @@ class ProjectsTest extends TestCase
 
     public function test_a_project_requires_a_description()
     {
+      $this->actingAs(factory('App\User')->create());
+
       $attributes = factory('App\Project')->raw(['description'=>'']);
 
       //if the created project has no description, then assert an error
       $this->post('/projects',$attributes)->assertSessionHasErrors('description');
     }
+
+    
+
 
     
 }
